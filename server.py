@@ -1,72 +1,39 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import logging
-from banking_tools import (
-    create_account,
-    validate_login,
-    get_account_balance,
-    transfer_funds,
-    get_transaction_history,
-    get_loan_information,
-    get_investment_advice,
-    schedule_appointment,
-)
+from flask import Flask, request, jsonify
+import banking_tools
 
-app = FastAPI()
+app = Flask(__name__)
 
-logging.basicConfig(
-    filename="user_activity.log",
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+def run_banking_agent(user_input: str) -> str:
+    """
+    Simple logic to interpret commands from user_input.
+    This is where you can replace with your AI/agent logic later.
+    """
+    text = user_input.lower()
 
-class ChatRequest(BaseModel):
-    action: str
-    params: dict
-
-@app.get("/")
-def home():
-    return {"message": "SecureBank International API is running."}
-
-@app.post("/chat")
-def chat_endpoint(data: ChatRequest):
-    action = data.action.lower()
-
-    if action == "create_account":
-        name = data.params.get("name")
-        password = data.params.get("password")
-        result = create_account(name, password)
-        return {"response": result}
-
-    elif action == "login":
-        account_number = data.params.get("account_number")
-        password = data.params.get("password")
-        if validate_login(account_number, password):
-            return {"response": f"Welcome back, {account_number}!"}
-        return {"response": "Invalid credentials."}
-
-    elif action == "check_balance":
-        account_number = data.params.get("account_number")
-        return {"response": get_account_balance(account_number)}
-
-    elif action == "transfer_funds":
-        account_number = data.params.get("account_number")
-        to_account = data.params.get("to_account")
-        amount = float(data.params.get("amount", 0))
-        return {"response": transfer_funds(account_number, to_account, amount)}
-
-    elif action == "transaction_history":
-        account_number = data.params.get("account_number")
-        return {"response": get_transaction_history(account_number)}
-
-    elif action == "loan_info":
-        return {"response": get_loan_information()}
-
-    elif action == "investment_advice":
-        return {"response": get_investment_advice()}
-
-    elif action == "schedule_appointment":
-        return {"response": schedule_appointment()}
-
+    if "balance" in text:
+        # For now, using a dummy account number
+        return banking_tools.get_account_balance("1001")
+    elif "transfer" in text:
+        return "Please provide the recipient account number and amount."
+    elif "loan" in text:
+        return banking_tools.get_loan_information()
+    elif "investment" in text:
+        return banking_tools.get_investment_advice()
+    elif "history" in text:
+        return banking_tools.get_transaction_history("1001")
     else:
-        return {"response": "Unknown action."}
+        return "Sorry, I didn’t understand that. Try: balance, transfer, loan, investment, history."
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_input = data.get("message", "")
+    response = run_banking_agent(user_input)
+    return jsonify({"response": response})
+
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "SecureBank API is running."})
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
