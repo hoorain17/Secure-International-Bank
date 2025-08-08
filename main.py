@@ -1,8 +1,5 @@
-# main.py
-
 import logging
 from getpass import getpass
-import banking_chatbot
 from banking_tools import (
     create_account,
     validate_login,
@@ -117,5 +114,6 @@ def welcome():
 if __name__ == "__main__":
     welcome()
 
+# This helper will be imported by server.py
 def run_banking_agent(user_input: str) -> str:
     return f"Agent received: {user_input}"
