@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+impor os
 from pydantic import BaseModel
 import logging
 from banking_tools import (
@@ -14,13 +15,13 @@ from banking_tools import (
 
 app = FastAPI()
 
+log_file = os.path.join("/tmp", "user_activity.log")
 logging.basicConfig(
-    filename="user_activity.log",
+    filename=log_file,
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
-class ChatRequest(BaseModel):
+ChatRequest(BaseModel):
     action: str
     params: dict
 
@@ -70,3 +71,4 @@ def chat_endpoint(data: ChatRequest):
 
     else:
         return {"response": "Unknown action."}
+
